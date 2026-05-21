@@ -59,10 +59,10 @@ $log_analysis_lines = openvpn_watchdog_setting($settings, 'LOG_ANALYSIS_LINES', 
 $log_analysis_max_matches = openvpn_watchdog_setting($settings, 'LOG_ANALYSIS_MAX_MATCHES', '5');
 $log_analysis_patterns = openvpn_watchdog_setting($settings, 'LOG_ANALYSIS_PATTERNS', 'AUTH_FAILED|TLS Error|Inactivity timeout|Connection reset|Cannot resolve host address|VERIFY ERROR|Options error|Exiting due to fatal error');
 
-echo infobox_highlight(lang('base_information'), lang('openvpn_watchdog_help'));
+echo infobox_highlight(lang('openvpn_watchdog_information'), lang('openvpn_watchdog_help'));
 
 echo form_open('openvpn_watchdog/settings/edit');
-echo form_header(lang('base_settings'));
+echo form_header(lang('openvpn_watchdog_settings'));
 
 echo field_dropdown('OPENVPN_WATCHDOG_LANGUAGE', $language_options, $lang_value, lang('openvpn_watchdog_language'), FALSE);
 
@@ -94,8 +94,8 @@ echo field_input('LOG_ANALYSIS_MAX_MATCHES', $log_analysis_max_matches, lang('op
 echo field_input('LOG_ANALYSIS_PATTERNS', $log_analysis_patterns, lang('openvpn_watchdog_log_analysis_patterns'), FALSE);
 
 echo field_button_set(array(
-    form_submit_update('submit'),
-    anchor_cancel('/app/openvpn_watchdog')
+    '<input type="submit" name="submit" value="' . openvpn_watchdog_settings_escape(lang('openvpn_watchdog_update')) . '" class="btn btn-primary" />',
+    anchor_custom('/app/openvpn_watchdog', lang('openvpn_watchdog_cancel'), 'low')
 ));
 
 echo form_footer();

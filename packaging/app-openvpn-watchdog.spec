@@ -1,5 +1,5 @@
 Name:           app-openvpn-watchdog
-Version:        0.1.12
+Version:        0.1.13
 Release:        1%{?dist}
 Summary:        ClearOS OpenVPN Watchdog web interface
 
@@ -85,10 +85,14 @@ chmod 0440 %{buildroot}/etc/sudoers.d/clearos-openvpn-watchdog
 %dir /var/clearos/openvpn_watchdog
 
 %changelog
+* Thu May 21 2026 SnugLinux <khvalera@ukr.net> - 0.1.13-1
+- Restore real English strings in en_US for ClearOS installations using English.
+- Remove hard-coded Ukrainian labels from the events view where possible.
+- Keep Ukrainian translations in uk_UA and keep app header/icon behavior.
+
 * Thu May 21 2026 SnugLinux <khvalera@ukr.net> - 0.1.12-1
 - Keep version at 0.1.12 and make language files conservative for ClearOS/PHP 5.x.
-- Keep Ukrainian UI text in both en_US fallback and uk_UA language files.
-- Keep UI emojis out of language files.
+- Use ASCII-only en_US language strings and keep UI emojis out of language files.
 
 * Thu May 21 2026 SnugLinux <khvalera@ukr.net> - 0.1.10-1
 - Show readable event times without timezone suffix in the events table.

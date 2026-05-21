@@ -61,7 +61,7 @@ class Settings extends ClearOS_Controller
         $data['ip_version_options'] = $this->openvpn_watchdog->get_http_ip_version_options();
         $data['request_method_options'] = $this->openvpn_watchdog->get_http_request_method_options();
 
-        $this->page->view_form('openvpn_watchdog/settings', $data, lang('base_settings'));
+        $this->page->view_form('openvpn_watchdog/settings', $data, lang('openvpn_watchdog_settings'));
     }
 
     /**

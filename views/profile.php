@@ -54,7 +54,7 @@ if ($name !== '' && ! isset($profile_name_options[$name]))
 
 ksort($profile_name_options, SORT_NATURAL | SORT_FLAG_CASE);
 
-echo infobox_highlight(lang('base_information'), lang('openvpn_watchdog_profile_form_help'));
+echo infobox_highlight(lang('openvpn_watchdog_information'), lang('openvpn_watchdog_profile_form_help'));
 
 echo form_open($form_action);
 echo form_header($is_new ? lang('openvpn_watchdog_add_profile') : lang('openvpn_watchdog_edit_profile'));
@@ -62,7 +62,7 @@ echo form_header($is_new ? lang('openvpn_watchdog_add_profile') : lang('openvpn_
 if (count($profile_name_options) > 0) {
     echo field_dropdown('name', $profile_name_options, $name, lang('openvpn_watchdog_profile_name'), FALSE);
 } else {
-    echo infobox_warning(lang('base_warning'), lang('openvpn_watchdog_no_openvpn_config_files'));
+    echo infobox_warning(lang('openvpn_watchdog_warning'), lang('openvpn_watchdog_no_openvpn_config_files'));
     echo field_input('name', $name, lang('openvpn_watchdog_profile_name'), FALSE);
 }
 echo field_dropdown('type', $type_options, $type, lang('openvpn_watchdog_profile_type'), FALSE);
@@ -71,20 +71,20 @@ echo field_input('ping', $ping, lang('openvpn_watchdog_profile_ping_targets'), F
 if (is_array($ping_target_suggestions) && count($ping_target_suggestions) > 0) {
     $suggestion_options = array('' => lang('openvpn_watchdog_ping_suggestion_placeholder')) + $ping_target_suggestions;
     echo field_dropdown('ping_suggestion', $suggestion_options, '', lang('openvpn_watchdog_ping_suggestion'), FALSE);
-    echo infobox_highlight(lang('base_information'), lang('openvpn_watchdog_ping_suggestion_help'));
+    echo infobox_highlight(lang('openvpn_watchdog_information'), lang('openvpn_watchdog_ping_suggestion_help'));
 }
 
 echo field_input('restart_cycles', $restart_cycles, lang('openvpn_watchdog_profile_restart_cycles'), FALSE);
 echo field_input('service', $service, lang('openvpn_watchdog_profile_custom_service'), FALSE);
 
 echo infobox_highlight(
-    lang('base_information'),
+    lang('openvpn_watchdog_information'),
     lang('openvpn_watchdog_profile_service_help')
 );
 
 echo field_button_set(array(
-    form_submit_update('submit'),
-    anchor_cancel('/app/openvpn_watchdog')
+    '<input type="submit" name="submit" value="' . openvpn_watchdog_profile_escape(lang('openvpn_watchdog_update')) . '" class="btn btn-primary" />',
+    anchor_custom('/app/openvpn_watchdog', lang('openvpn_watchdog_cancel'), 'low')
 ));
 
 echo "<script>

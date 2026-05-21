@@ -157,7 +157,7 @@ echo '<style>' .
     '</style>';
 
 echo infobox_highlight(
-    lang('base_information'),
+    lang('openvpn_watchdog_information'),
     openvpn_watchdog_events_escape(lang('openvpn_watchdog_events_page_help'))
 );
 
@@ -168,18 +168,18 @@ $buttons = array(
 );
 
 if (count($items) === 0) {
-    echo infobox_warning(lang('base_warning'), lang('openvpn_watchdog_no_recent_events'));
+    echo infobox_warning(lang('openvpn_watchdog_warning'), lang('openvpn_watchdog_no_recent_events'));
 }
 
 echo summary_table(
     '📋 ' . lang('openvpn_watchdog_recent_events'),
     $buttons,
     array(
-        'Час',
-        'Рівень',
-        'Профіль',
-        'Тип',
-        'Повідомлення',
+        lang('openvpn_watchdog_event_time'),
+        lang('openvpn_watchdog_event_severity'),
+        lang('openvpn_watchdog_event_profile'),
+        lang('openvpn_watchdog_type'),
+        lang('openvpn_watchdog_event_message'),
     ),
     $items,
     array('no_action' => TRUE)
@@ -217,7 +217,7 @@ echo "    for (var i = 0; i < children.length; i++) {\n";
 echo "      var child = children[i];\n";
 echo "      if (child === main) continue;\n";
 echo "      var text = child.textContent || '';\n";
-echo "      if (text.indexOf('OpenVPN Watchdog') !== -1 || text.indexOf('Powered By') !== -1 || text.indexOf('Additional Info') !== -1 || text.indexOf('Статус') !== -1 || text.indexOf('Дія') !== -1)\n";
+echo "      if (text.indexOf('OpenVPN Watchdog') !== -1 || text.indexOf('Powered By') !== -1 || text.indexOf('Additional Info') !== -1 || text.indexOf('Status') !== -1 || text.indexOf('Action') !== -1 || text.indexOf('Статус') !== -1 || text.indexOf('Дія') !== -1)\n";
 echo "        child.style.display = 'none';\n";
 echo "    }\n";
 echo "\n";
@@ -230,15 +230,22 @@ echo "\n";
 echo "  function localizeOpenvpnWatchdogDataTable(){\n";
 echo "    if (!window.jQuery) return;\n";
 echo "    var page = jQuery('#openvpn-watchdog-events-page');\n";
-echo "    page.find('.dataTables_filter label').contents().filter(function(){ return this.nodeType === 3; }).each(function(){ this.nodeValue = 'Пошук '; });\n";
-echo "    page.find('.dataTables_filter input').attr('placeholder', 'Пошук');\n";
+echo "    var dtSearch = '" . addslashes(lang('openvpn_watchdog_datatable_search')) . "';\n";
+echo "    var dtShow = '" . addslashes(lang('openvpn_watchdog_datatable_show')) . "';\n";
+echo "    var dtEntries = '" . addslashes(lang('openvpn_watchdog_datatable_entries')) . "';\n";
+echo "    var dtShowing = '" . addslashes(lang('openvpn_watchdog_datatable_showing')) . "';\n";
+echo "    var dtTo = '" . addslashes(lang('openvpn_watchdog_datatable_to')) . "';\n";
+echo "    var dtOf = '" . addslashes(lang('openvpn_watchdog_datatable_of')) . "';\n";
+echo "    var dtRecords = '" . addslashes(lang('openvpn_watchdog_datatable_records')) . "';\n";
+echo "    page.find('.dataTables_filter label').contents().filter(function(){ return this.nodeType === 3; }).each(function(){ this.nodeValue = dtSearch + ' '; });\n";
+echo "    page.find('.dataTables_filter input').attr('placeholder', dtSearch);\n";
 echo "    page.find('.dataTables_length label').contents().filter(function(){ return this.nodeType === 3; }).each(function(){\n";
-echo "      this.nodeValue = this.nodeValue.replace(/Show|Показати/gi, 'Показати').replace(/entries|Rows|Рядки/gi, ' рядків');\n";
+echo "      this.nodeValue = this.nodeValue.replace(/Show|Показати/gi, dtShow).replace(/entries|Rows|Рядки/gi, ' ' + dtEntries);\n";
 echo "    });\n";
 echo "    page.find('.dataTables_info').each(function(){\n";
 echo "      var text = jQuery(this).text();\n";
-echo "      var m = text.match(/Showing\s+(\d+)\s+to\s+(\d+)\s+of\s+(\d+)\s+entries/i);\n";
-echo "      if (m) jQuery(this).text('Показано ' + m[1] + '–' + m[2] + ' із ' + m[3] + ' записів');\n";
+echo "      var m = text.match(/Showing\\s+(\\d+)\\s+to\\s+(\\d+)\\s+of\\s+(\\d+)\\s+entries/i);\n";
+echo "      if (m) jQuery(this).text(dtShowing + ' ' + m[1] + ' ' + dtTo + ' ' + m[2] + ' ' + dtOf + ' ' + m[3] + ' ' + dtRecords);\n";
 echo "    });\n";
 echo "  }\n";
 echo "\n";

@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'openvpn_watchdog';
-$app['version'] = '0.1.12';
+$app['version'] = '0.1.13';
 $app['release'] = '1';
 $app['vendor'] = 'SnugLinux';
 $app['packager'] = 'SnugLinux';

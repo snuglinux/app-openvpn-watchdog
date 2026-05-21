@@ -66,7 +66,7 @@ if (is_array($config_warnings) && count($config_warnings) > 0) {
     $warning_text = '';
     foreach ($config_warnings as $warning)
         $warning_text .= openvpn_watchdog_view_escape($warning) . '<br>';
-    echo infobox_warning(lang('base_warning'), $warning_text);
+    echo infobox_warning(lang('openvpn_watchdog_warning'), $warning_text);
 }
 
 if ($action_status === 'success') {
@@ -92,7 +92,7 @@ echo field_view(lang('openvpn_watchdog_http_targets'), openvpn_watchdog_view_das
 echo field_view(lang('openvpn_watchdog_ping_targets'), openvpn_watchdog_view_dash(isset($settings['PING_SERVER_INT']) ? $settings['PING_SERVER_INT'] : ''));
 
 echo field_button_set(array(
-    anchor_edit('/app/openvpn_watchdog/settings/edit'),
+    anchor_custom('/app/openvpn_watchdog/settings/edit', lang('openvpn_watchdog_settings'), 'low'),
     anchor_custom('/app/openvpn_watchdog/events', '📋 ' . lang('openvpn_watchdog_recent_events'), 'low'),
     anchor_custom('/app/openvpn_watchdog/dry_run', '🧪 ' . lang('openvpn_watchdog_dry_run'), 'low'),
     anchor_custom('/app/openvpn_watchdog/run_now', '▶ ' . lang('openvpn_watchdog_run_now'), 'high')
@@ -106,7 +106,7 @@ echo form_close();
 ///////////////////////////////////////////////////////////////////////////////
 
 $buttons = array(
-    anchor_add('/app/openvpn_watchdog/settings/add'),
+    anchor_custom('/app/openvpn_watchdog/settings/add', lang('openvpn_watchdog_add'), 'high'),
 );
 
 $headers = array(
@@ -114,6 +114,7 @@ $headers = array(
     lang('openvpn_watchdog_type'),
     lang('openvpn_watchdog_ping'),
     lang('openvpn_watchdog_restart_cycles_short'),
+    lang('openvpn_watchdog_action'),
 );
 
 $items = array();
@@ -121,15 +122,15 @@ $items = array();
 if (is_array($profiles)) {
     foreach ($profiles as $index => $profile) {
         $items[] = array(
-            'anchors' => button_set(array(
-                anchor_edit('/app/openvpn_watchdog/settings/profile/' . intval($index)),
-                anchor_delete('/app/openvpn_watchdog/settings/delete/' . intval($index)),
-            )),
             'details' => array(
                 openvpn_watchdog_view_dash(isset($profile['name']) ? $profile['name'] : ''),
                 openvpn_watchdog_view_dash(isset($profile['type']) ? strtoupper($profile['type']) : ''),
                 openvpn_watchdog_view_dash(isset($profile['ping']) ? $profile['ping'] : ''),
                 openvpn_watchdog_view_dash(isset($profile['restart_cycles']) ? $profile['restart_cycles'] : ''),
+                button_set(array(
+                    anchor_custom('/app/openvpn_watchdog/settings/profile/' . intval($index), lang('openvpn_watchdog_edit'), 'low'),
+                    anchor_custom('/app/openvpn_watchdog/settings/delete/' . intval($index), lang('openvpn_watchdog_delete'), 'low'),
+                )),
             ),
         );
     }
@@ -139,8 +140,42 @@ echo summary_table(
     lang('openvpn_watchdog_profiles'),
     $buttons,
     $headers,
-    $items
+    $items,
+    array('no_action' => TRUE)
 );
 
 if (count($items) === 0)
-    echo infobox_warning(lang('base_warning'), lang('openvpn_watchdog_no_profiles'));
+    echo infobox_warning(lang('openvpn_watchdog_warning'), lang('openvpn_watchdog_no_profiles'));
+
+// Keep ClearOS-generated app sidebar labels in the same language as this app.
+// This is intentionally local to the OpenVPN Watchdog summary page.
+echo "<script>\n";
+echo "(function(){\n";
+echo "  function localizeOpenvpnWatchdogSidebarLabels(){\n";
+echo "    var labels = {\n";
+echo "      'Мейнтейнер': '" . addslashes(lang('openvpn_watchdog_sidebar_maintainer')) . "',\n";
+echo "      'Maintainer': '" . addslashes(lang('openvpn_watchdog_sidebar_maintainer')) . "',\n";
+echo "      'Версія': '" . addslashes(lang('openvpn_watchdog_sidebar_version')) . "',\n";
+echo "      'Version': '" . addslashes(lang('openvpn_watchdog_sidebar_version')) . "',\n";
+echo "      'Powered By': '" . addslashes(lang('openvpn_watchdog_sidebar_powered_by')) . "',\n";
+echo "      'Статус': '" . addslashes(lang('openvpn_watchdog_sidebar_status')) . "',\n";
+echo "      'Status': '" . addslashes(lang('openvpn_watchdog_sidebar_status')) . "',\n";
+echo "      'Дія': '" . addslashes(lang('openvpn_watchdog_sidebar_action')) . "',\n";
+echo "      'Action': '" . addslashes(lang('openvpn_watchdog_sidebar_action')) . "',\n";
+echo "      'Додаткова інформація': '" . addslashes(lang('openvpn_watchdog_sidebar_additional_info')) . "',\n";
+echo "      'Additional Info': '" . addslashes(lang('openvpn_watchdog_sidebar_additional_info')) . "'\n";
+echo "    };\n";
+echo "    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);\n";
+echo "    var nodes = [];\n";
+echo "    var node;\n";
+echo "    while ((node = walker.nextNode())) nodes.push(node);\n";
+echo "    for (var i = 0; i < nodes.length; i++) {\n";
+echo "      var text = nodes[i].nodeValue.replace(/^\\s+|\\s+$/g, '');\n";
+echo "      if (labels[text]) nodes[i].nodeValue = nodes[i].nodeValue.replace(text, labels[text]);\n";
+echo "    }\n";
+echo "  }\n";
+echo "  if (document.addEventListener) document.addEventListener('DOMContentLoaded', localizeOpenvpnWatchdogSidebarLabels);\n";
+echo "  setTimeout(localizeOpenvpnWatchdogSidebarLabels, 500);\n";
+echo "})();\n";
+echo "</script>\n";
+
