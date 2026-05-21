@@ -2,6 +2,10 @@
 
 ClearOS Webconfig app for configuring and controlling **openvpn-watchdog**.
 
+## Screenshot
+
+![OpenVPN Watchdog Webconfig](docs/screenshots/openvpn-watchdog-webconfig.png)
+
 ## Scope
 
 The app is intentionally conservative:
