@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# app-openvpn-watchdog package install/upgrade preparation.
+# Safe responsibilities:
+# - do not overwrite /etc/openvpn-watchdog.conf;
+# - do not start/stop OpenVPN services;
+# - install only the fixed privileged helper and sudoers rule;
+# - prepare app-owned state directories.
+
+logger -p local6.notice -t installer "app-openvpn-watchdog - package preparation"
+
+mkdir -p /var/clearos/openvpn_watchdog 2>/dev/null || true
+chown root:root /var/clearos/openvpn_watchdog 2>/dev/null || true
+chmod 0755 /var/clearos/openvpn_watchdog 2>/dev/null || true
+
+mkdir -p /var/log/openvpn-watchdog /var/lib/openvpn-watchdog 2>/dev/null || true
+chown root:root /var/log/openvpn-watchdog /var/lib/openvpn-watchdog 2>/dev/null || true
+chmod 0755 /var/log/openvpn-watchdog /var/lib/openvpn-watchdog 2>/dev/null || true
+
+APP_DIR=/usr/clearos/apps/openvpn_watchdog
+HELPER_SRC="$APP_DIR/deploy/openvpn-watchdog-helper.sh"
+HELPER_DST=/usr/sbin/clearos-openvpn-watchdog-helper
+SUDOERS_FILE=/etc/sudoers.d/clearos-openvpn-watchdog
+
+if [ -f "$HELPER_SRC" ]; then
+    install -m 0755 -o root -g root "$HELPER_SRC" "$HELPER_DST" 2>/dev/null || true
+fi
+
+if [ -x "$HELPER_DST" ]; then
+    mkdir -p /etc/sudoers.d 2>/dev/null || true
+    TMP=$(mktemp /tmp/clearos-openvpn-watchdog-sudoers.XXXXXX) || TMP=
+    if [ -n "$TMP" ]; then
+        {
+            echo "# ClearOS OpenVPN Watchdog app helper"
+            echo "Defaults!$HELPER_DST !requiretty"
+            echo "Defaults!$HELPER_DST lecture=never"
+            if id webconfig >/dev/null 2>&1; then
+                echo "webconfig ALL=(root) NOPASSWD: $HELPER_DST *"
+            fi
+            if id apache >/dev/null 2>&1; then
+                echo "apache ALL=(root) NOPASSWD: $HELPER_DST *"
+            fi
+            if id nobody >/dev/null 2>&1; then
+                echo "nobody ALL=(root) NOPASSWD: $HELPER_DST *"
+            fi
+        } > "$TMP"
+
+        if command -v visudo >/dev/null 2>&1; then
+            if visudo -cf "$TMP" >/dev/null 2>&1; then
+                install -m 0440 -o root -g root "$TMP" "$SUDOERS_FILE" 2>/dev/null || true
+            else
+                logger -p local6.err -t installer "app-openvpn-watchdog - generated sudoers file is invalid"
+            fi
+        else
+            install -m 0440 -o root -g root "$TMP" "$SUDOERS_FILE" 2>/dev/null || true
+        fi
+        rm -f "$TMP"
+    fi
+fi
+
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload >/dev/null 2>&1 || true
+fi
+
+exit 0
