@@ -23,6 +23,8 @@ if (! isset($service_summary))
     $service_summary = array();
 if (! isset($config_warnings))
     $config_warnings = array();
+if (! isset($permission_warnings))
+    $permission_warnings = array();
 if (! isset($action_output))
     $action_output = '';
 if (! isset($action_status))
@@ -67,6 +69,14 @@ if (is_array($config_warnings) && count($config_warnings) > 0) {
     foreach ($config_warnings as $warning)
         $warning_text .= openvpn_watchdog_view_escape($warning) . '<br>';
     echo infobox_warning(lang('openvpn_watchdog_warning'), $warning_text);
+}
+
+if (is_array($permission_warnings) && count($permission_warnings) > 0) {
+    $permission_text = openvpn_watchdog_view_escape(lang('openvpn_watchdog_permission_warning_help')) . '<br><br>';
+    foreach ($permission_warnings as $warning)
+        $permission_text .= openvpn_watchdog_view_escape($warning) . '<br>';
+    $permission_text .= '<br>' . anchor_custom('/app/openvpn_watchdog/fix_permissions', lang('openvpn_watchdog_fix_openvpn_permissions'), 'high');
+    echo infobox_warning(lang('openvpn_watchdog_permission_warning_title'), $permission_text);
 }
 
 if ($action_status === 'success') {

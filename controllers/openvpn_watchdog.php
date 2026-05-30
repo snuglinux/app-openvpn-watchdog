@@ -85,6 +85,29 @@ class Openvpn_Watchdog extends ClearOS_Controller
     }
 
     /**
+     * Fixes unsafe OpenVPN permissions through privileged helper.
+     *
+     * @return redirect
+     */
+
+    function fix_permissions()
+    {
+        $this->lang->load('base');
+        $this->lang->load('openvpn_watchdog');
+        $this->load->library('openvpn_watchdog/Openvpn_Watchdog');
+
+        try {
+            $this->openvpn_watchdog->fix_openvpn_permissions();
+            $this->page->set_status_updated();
+            redirect('/openvpn_watchdog');
+            return;
+        } catch (Exception $e) {
+            $this->page->view_exception($e);
+            return;
+        }
+    }
+
+    /**
      * Runs a read-only dry run.
      *
      * @return view
@@ -151,6 +174,7 @@ class Openvpn_Watchdog extends ClearOS_Controller
         $data['config_file'] = $this->openvpn_watchdog->get_config_file();
         $data['service_summary'] = $this->openvpn_watchdog->get_service_summary();
         $data['config_warnings'] = $this->openvpn_watchdog->get_config_warnings();
+        $data['permission_warnings'] = $this->openvpn_watchdog->get_openvpn_permission_warnings();
         $data['method_options'] = $this->openvpn_watchdog->get_internet_check_method_options();
 
         return $data;

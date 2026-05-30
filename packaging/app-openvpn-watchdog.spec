@@ -1,5 +1,5 @@
 Name:           app-openvpn-watchdog
-Version:        0.1.13
+Version:        0.1.14
 Release:        1%{?dist}
 Summary:        ClearOS OpenVPN Watchdog web interface
 
@@ -64,14 +64,14 @@ install -d -m 0750 %{buildroot}/etc/sudoers.d
 
 install -m 0755 %{buildroot}/usr/clearos/apps/openvpn_watchdog/deploy/openvpn-watchdog-helper.sh %{buildroot}/usr/sbin/clearos-openvpn-watchdog-helper
 
-cat > %{buildroot}/etc/sudoers.d/clearos-openvpn-watchdog <<'EOF'
+cat > %{buildroot}/etc/sudoers.d/clearos-openvpn-watchdog <<'SUDOERS_EOF'
 # ClearOS OpenVPN Watchdog app helper
 Defaults!/usr/sbin/clearos-openvpn-watchdog-helper !requiretty
 Defaults!/usr/sbin/clearos-openvpn-watchdog-helper lecture=never
 webconfig ALL=(root) NOPASSWD: /usr/sbin/clearos-openvpn-watchdog-helper *
 apache ALL=(root) NOPASSWD: /usr/sbin/clearos-openvpn-watchdog-helper *
 nobody ALL=(root) NOPASSWD: /usr/sbin/clearos-openvpn-watchdog-helper *
-EOF
+SUDOERS_EOF
 chmod 0440 %{buildroot}/etc/sudoers.d/clearos-openvpn-watchdog
 
 %post
@@ -85,6 +85,12 @@ chmod 0440 %{buildroot}/etc/sudoers.d/clearos-openvpn-watchdog
 %dir /var/clearos/openvpn_watchdog
 
 %changelog
+* Sat May 30 2026 SnugLinux <khvalera@ukr.net> - 0.1.14-1
+- Discover OpenVPN profiles through the privileged helper instead of Webconfig glob().
+- Add Webconfig warning for unsafe world-readable OpenVPN config/key permissions.
+- Add helper-backed button to fix sensitive OpenVPN permissions without changing owner/group.
+- Localize permission warning text for Ukrainian Webconfig deployments.
+
 * Thu May 21 2026 SnugLinux <khvalera@ukr.net> - 0.1.13-1
 - Restore real English strings in en_US for ClearOS installations using English.
 - Remove hard-coded Ukrainian labels from the events view where possible.

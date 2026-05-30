@@ -231,36 +231,7 @@ class Openvpn_Watchdog extends Daemon
         clearos_profile(__METHOD__, __LINE__);
 
         $current_name = trim((string) $current_name);
-        $names = array();
-
-        $patterns = array(
-            '/etc/openvpn/client/*-client.conf' => '-client.conf',
-            '/etc/openvpn/server/*-server.conf' => '-server.conf',
-            '/etc/openvpn/*.conf' => '.conf',
-        );
-
-        foreach ($patterns as $pattern => $suffix) {
-            $files = glob($pattern);
-            if (! is_array($files))
-                continue;
-
-            foreach ($files as $file) {
-                $base = basename($file);
-                if ($suffix !== '' && substr($base, -strlen($suffix)) === $suffix)
-                    $name = substr($base, 0, -strlen($suffix));
-                else
-                    $name = preg_replace('/\.conf$/', '', $base);
-
-                $name = trim((string) $name);
-                if ($name === '')
-                    continue;
-
-                if (! preg_match('/^[A-Za-z0-9_.-]+$/', $name))
-                    continue;
-
-                $names[$name] = $name;
-            }
-        }
+        $names = $this->_get_openvpn_profiles_from_helper();
 
         if ($current_name !== '' && preg_match('/^[A-Za-z0-9_.-]+$/', $current_name))
             $names[$current_name] = $current_name;
@@ -445,6 +416,58 @@ class Openvpn_Watchdog extends Daemon
         $settings['OPENVPN_PROFILES_TEXT'] = implode("\n", array_values($lines));
 
         $this->set_settings($settings);
+    }
+
+    /**
+     * Returns unsafe OpenVPN permission warnings.
+     *
+     * @return array warnings
+     */
+
+    public function get_openvpn_permission_warnings()
+    {
+        $warnings = array();
+
+        try {
+            $result = $this->_run_helper('check-permissions', TRUE);
+        } catch (\Exception $e) {
+            return $warnings;
+        }
+
+        if (! isset($result['output']) || ! is_array($result['output']))
+            return $warnings;
+
+        foreach ($result['output'] as $line) {
+            $line = trim((string) $line);
+            if ($line === '')
+                continue;
+
+            $parts = explode("\t", $line);
+            if (! is_array($parts) || count($parts) < 5)
+                continue;
+
+            if ($parts[0] !== 'UNSAFE')
+                continue;
+
+            $format = lang('openvpn_watchdog_permission_item_format');
+            if ($format === 'openvpn_watchdog_permission_item_format' || trim((string) $format) === '')
+                $format = '%s - permissions %s, recommended %s (%s)';
+
+            $warnings[] = sprintf($format, $parts[1], $parts[2], $parts[3], $parts[4]);
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Fixes unsafe OpenVPN permissions through privileged helper.
+     *
+     * @return void
+     */
+
+    public function fix_openvpn_permissions()
+    {
+        $this->_run_helper('fix-permissions', FALSE);
     }
 
     /**
@@ -1264,6 +1287,53 @@ class Openvpn_Watchdog extends Daemon
     }
 
     /**
+     * Returns OpenVPN profiles discovered through privileged helper.
+     *
+     * Webconfig normally runs as the webconfig user and must not be added to
+     * the openvpn group just to list profiles.  The helper runs as root through
+     * sudoers and returns only safe profile names, not configuration contents.
+     *
+     * @return array profile names
+     */
+
+    protected function _get_openvpn_profiles_from_helper()
+    {
+        $profiles = array();
+
+        try {
+            $result = $this->_run_helper('list-profiles', TRUE);
+        } catch (\Exception $e) {
+            return $profiles;
+        }
+
+        if (! isset($result['output']) || ! is_array($result['output']))
+            return $profiles;
+
+        foreach ($result['output'] as $line) {
+            $line = trim((string) $line);
+            if ($line === '')
+                continue;
+
+            $parts = preg_split('/\s+/', $line);
+            if (! is_array($parts) || count($parts) < 2)
+                continue;
+
+            $type = strtoupper(trim((string) $parts[0]));
+            $name = trim((string) $parts[1]);
+
+            if (! in_array($type, array('CLIENT', 'SERVER', 'LEGACY'), TRUE))
+                continue;
+
+            if ($name === '' || ! preg_match('/^[A-Za-z0-9_.-]+$/', $name))
+                continue;
+
+            $profiles[$name] = $name;
+        }
+
+        return $profiles;
+    }
+
+    /**
      * Finds OpenVPN config files.
      *
      * @param string  $profile_name        profile name
@@ -1571,7 +1641,7 @@ class Openvpn_Watchdog extends Daemon
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        if (! preg_match('/^(dry-run|run-now|start|stop|restart|status|reset-failed|clear-events)$/', $action))
+        if (! preg_match('/^(dry-run|run-now|start|stop|restart|status|reset-failed|clear-events|list-profiles|check-permissions|fix-permissions)$/', $action))
             throw new Engine_Exception('Invalid helper action', CLEAROS_ERROR);
 
         if (! is_file(self::COMMAND_HELPER) || ! is_executable(self::COMMAND_HELPER))
